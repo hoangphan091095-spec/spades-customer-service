@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "828065306729",
+    "project_id": "spades-customer-service",
+    "storage_bucket": "spades-customer-service.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:828065306729:android:b5f3e4064c536bb695aaf8",
+        "android_client_info": {
+          "package_name": "com.example.spades_customer_service"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvpwvpX3RcTFPHMo9xD3KuxfGC51nkOgs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:828065306729:android:3c3a197accafa36f95aaf8",
+        "android_client_info": {
+          "package_name": "com.example.spadesseat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvpwvpX3RcTFPHMo9xD3KuxfGC51nkOgs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:828065306729:android:fb46c5224815311095aaf8",
+        "android_client_info": {
+          "package_name": "com.spades.spades_customer_service"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvpwvpX3RcTFPHMo9xD3KuxfGC51nkOgs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
