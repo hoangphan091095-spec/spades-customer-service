@@ -7,6 +7,7 @@ import 'top_players_screen.dart';
 import 'profile_screen.dart';
 import 'tournament_schedule_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'admin_control_panel.dart';
 
 class WelcomeScreen extends StatefulWidget {
   @override
@@ -642,6 +643,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   Widget _buildFeaturesGrid(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
+    final bool isAdmin = authService.currentUser?.username == 'admin';
+
     final features = [
       {
         'title': 'Lịch sử đấu',
@@ -704,6 +708,25 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         },
       },
     ];
+
+    // Add Admin Control Panel if user is admin
+    if (isAdmin) {
+      features.insert(0, {
+        'title': 'Admin Control Panel',
+        'icon': Icons.admin_panel_settings,
+        'color': Color(0xFFDC2626),
+        'gradient': [
+          Color(0xFFDC2626),
+          Color(0xFF991B1B),
+        ],
+        'onTap': () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AdminControlPanel()),
+          );
+        },
+      });
+    }
 
     return GridView.builder(
       shrinkWrap: true,
