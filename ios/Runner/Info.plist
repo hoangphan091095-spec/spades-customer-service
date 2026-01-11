@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- App Information -->
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>SPADES Customer Service</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.spades.spadesCustomerService</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>SPADES Customer Service</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(FLUTTER_BUILD_NAME)</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>$(FLUTTER_BUILD_NUMBER)</string>
+
+	<!-- iOS Requirements -->
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+
+	<!-- Launch Screen -->
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+
+	<!-- Orientation Settings -->
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+
+	<!-- Performance Settings -->
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+
+	<!-- ========== PERMISSIONS ========== -->
+
+	<!-- Camera Permission (matches Android) -->
+	<key>NSCameraUsageDescription</key>
+	<string>Allow camera access to take profile pictures</string>
+
+	<!-- Photo Library Permission (matches Android READ_EXTERNAL_STORAGE) -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Allow photo library access to select profile pictures</string>
+
+	<!-- Microphone Permission (required if using camera with audio) -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Allow microphone access for video features</string>
+
+	<!-- Photo Library Add Permission (for saving photos) -->
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Allow saving photos to your library</string>
+
+	<!-- Network Permissions (matches Android INTERNET & ACCESS_NETWORK_STATE) -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>firebasestorage.googleapis.com</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+				<key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSTemporaryExceptionMinimumTLSVersion</key>
+				<string>TLSv1.1</string>
+			</dict>
+		</dict>
+	</dict>
+
+	<!-- Firebase Configuration -->
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<false/>
+
+	<!-- Background Modes (if needed for any background processing) -->
+	<!--
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+	-->
+
+	<!-- Status Bar Appearance -->
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
+
+	<!-- Device Capabilities -->
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>armv7</string>
+	</array>
+
+	<!-- Local Network Privacy (if your app communicates with local devices) -->
+	<!--
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>This app uses the local network to discover nearby devices</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_yourservice._tcp</string>
+	</array>
+	-->
+
+	<!-- Face ID/Touch ID (if you plan to add biometric auth) -->
+	<!--
+	<key>NSFaceIDUsageDescription</key>
+	<string>Allow Face ID to securely authenticate you</string>
+	-->
+
+	<!-- Location Services (if you add location features) -->
+	<!--
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Allow location access to provide location-based services</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Allow location access to provide location-based services</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Allow location access to provide location-based services</string>
+	-->
+</dict>
+</plist>

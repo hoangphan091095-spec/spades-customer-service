@@ -64,6 +64,7 @@ class _TournamentScheduleScreenState extends State<TournamentScheduleScreen> wit
   @override
   void initState() {
     super.initState();
+    // Get week start (Monday)
     _currentWeekStart = _getWeekStartDate(DateTime.now());
     _tabController = TabController(
       length: 7,
@@ -80,7 +81,10 @@ class _TournamentScheduleScreenState extends State<TournamentScheduleScreen> wit
   }
 
   DateTime _getWeekStartDate(DateTime date) {
-    return date.subtract(Duration(days: date.weekday - 1));
+    // Get Monday of the week
+    // Monday = 1, Sunday = 7 in DateTime.weekday
+    int daysFromMonday = date.weekday - 1;
+    return DateTime(date.year, date.month, date.day - daysFromMonday);
   }
 
   Future<void> _initializeData() async {
@@ -153,13 +157,19 @@ class _TournamentScheduleScreenState extends State<TournamentScheduleScreen> wit
     return null;
   }
 
+  // FIXED: Proper week ID generation
+  String _generateWeekId(DateTime weekStart) {
+    // Format: YYYY-MM-DD (consistent with AdminScheduleDialog)
+    return DateFormat('yyyy-MM-dd').format(weekStart);
+  }
+
   Future<void> _loadWeekSchedule() async {
     try {
-      // Format the week ID consistently
-      final formattedDate = '${_currentWeekStart.year}-${_currentWeekStart.month.toString().padLeft(2, '0')}-${_currentWeekStart.day.toString().padLeft(2, '0')}';
-      final weekId = formattedDate;
+      // Generate week ID using the same format as AdminScheduleDialog
+      final weekId = _generateWeekId(_currentWeekStart);
 
-      print('Loading schedule for week ID: $weekId'); // Debug print
+      print('📅 Loading schedule for week ID: $weekId');
+      print('📅 Week start date: $_currentWeekStart');
 
       final doc = await FirebaseFirestore.instance
           .collection('tournamentSchedules')
@@ -171,7 +181,7 @@ class _TournamentScheduleScreenState extends State<TournamentScheduleScreen> wit
       _multiDayEventsByHeader.clear();
 
       if (doc.exists) {
-        print('Found schedule for week: $weekId'); // Debug print
+        print('✅ Found schedule document for week: $weekId');
         final data = doc.data() as Map<String, dynamic>;
 
         // Load events for each day
@@ -180,6 +190,8 @@ class _TournamentScheduleScreenState extends State<TournamentScheduleScreen> wit
           if (data.containsKey(dayKey)) {
             final events = List<Map<String, dynamic>>.from(data[dayKey]);
             _weekEvents[day] = events;
+
+            print('📊 Loaded ${events.length} events for $day');
 
             // Track multi-day events
             for (var event in events) {
@@ -193,6 +205,8 @@ class _TournamentScheduleScreenState extends State<TournamentScheduleScreen> wit
                 'dayIndex': _getDayIndex(day),
               });
             }
+          } else {
+            print('⚠️ No events found for $day');
           }
         }
 
@@ -201,19 +215,61 @@ class _TournamentScheduleScreenState extends State<TournamentScheduleScreen> wit
           _multiDayEventsByHeader[header]!.sort((a, b) => a['dayIndex'].compareTo(b['dayIndex']));
         }
       } else {
-        print('No schedule found for week: $weekId'); // Debug print
+        print('⚠️ No schedule found for week: $weekId');
+        print('ℹ️ Checking if we need to look for alternative date formats...');
+
+        // Try alternative date formats if needed
+        await _tryAlternativeWeekIds(weekId);
       }
 
       if (mounted) {
         setState(() {});
       }
     } catch (e) {
-      print('Error loading week schedule: $e');
+      print('❌ Error loading week schedule: $e');
       // Clear all events on error
       _weekEvents.forEach((key, value) => value.clear());
       _multiDayEventsByHeader.clear();
       if (mounted) {
         setState(() {});
+      }
+    }
+  }
+
+  // Try alternative week ID formats
+  Future<void> _tryAlternativeWeekIds(String originalWeekId) async {
+    final alternativeFormats = [
+      // Try different date formats that might be in Firebase
+      DateFormat('yyyy-M-d').format(_currentWeekStart), // 2026-1-5
+      DateFormat('yyyy/MM/dd').format(_currentWeekStart), // 2026/01/05
+      DateFormat('dd-MM-yyyy').format(_currentWeekStart), // 05-01-2026
+    ];
+
+    for (var format in alternativeFormats) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('tournamentSchedules')
+            .doc(format)
+            .get();
+
+        if (doc.exists) {
+          print('✅ Found schedule with alternative format: $format');
+          // Load data from this document
+          final data = doc.data() as Map<String, dynamic>;
+
+          // Load events for each day
+          for (var day in _weekEvents.keys) {
+            final dayKey = '${day.toLowerCase()}Events';
+            if (data.containsKey(dayKey)) {
+              final events = List<Map<String, dynamic>>.from(data[dayKey]);
+              _weekEvents[day] = events;
+              print('📊 Loaded ${events.length} events for $day from alternative format');
+            }
+          }
+          return; // Exit if we found data
+        }
+      } catch (e) {
+        print('⚠️ Error checking alternative format $format: $e');
       }
     }
   }
@@ -359,6 +415,32 @@ class _TournamentScheduleScreenState extends State<TournamentScheduleScreen> wit
     return days[dayIndex];
   }
 
+  // DEBUG: Add a button to check Firebase data manually
+  Future<void> _debugCheckFirebaseData() async {
+    print('🔍 DEBUG: Checking Firebase data...');
+
+    try {
+      // Get all documents in tournamentSchedules
+      final snapshot = await FirebaseFirestore.instance
+          .collection('tournamentSchedules')
+          .get();
+
+      print('📊 Total documents in tournamentSchedules: ${snapshot.docs.length}');
+
+      for (var doc in snapshot.docs) {
+        print('📄 Document ID: ${doc.id}');
+        print('📄 Data keys: ${doc.data().keys}');
+      }
+
+      // Check current week ID
+      final weekId = _generateWeekId(_currentWeekStart);
+      print('📅 Current week ID being looked for: $weekId');
+
+    } catch (e) {
+      print('❌ DEBUG error: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -376,6 +458,7 @@ class _TournamentScheduleScreenState extends State<TournamentScheduleScreen> wit
           icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
+
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(100),
           child: Column(
@@ -396,13 +479,24 @@ class _TournamentScheduleScreenState extends State<TournamentScheduleScreen> wit
                           _loadWeekSchedule();
                         },
                       ),
-                      Text(
-                        '${DateFormat('dd/MM').format(_currentWeekStart)} - ${DateFormat('dd/MM').format(_currentWeekStart.add(Duration(days: 6)))}',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      Column(
+                        children: [
+                          Text(
+                            'Tuần: ${DateFormat('dd/MM').format(_currentWeekStart)} - ${DateFormat('dd/MM').format(_currentWeekStart.add(Duration(days: 6)))}',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            'Week ID: ${_generateWeekId(_currentWeekStart)}',
+                            style: TextStyle(
+                              color: Colors.grey[400],
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
                       ),
                       IconButton(
                         icon: Icon(Icons.chevron_right, color: Colors.white),
@@ -615,6 +709,7 @@ class _TournamentScheduleScreenState extends State<TournamentScheduleScreen> wit
                             fontSize: 14,
                           ),
                         ),
+
                       ],
                     ),
                   ),
@@ -682,6 +777,7 @@ class _TournamentScheduleScreenState extends State<TournamentScheduleScreen> wit
                         fontSize: 14,
                       ),
                     ),
+                    SizedBox(height: 16),
                   ],
                 ),
               ),
@@ -845,7 +941,14 @@ class _TournamentScheduleScreenState extends State<TournamentScheduleScreen> wit
                       ),
                     ),
                     SizedBox(width: 4),
-
+                    Text(
+                      'LIVE',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
               ),

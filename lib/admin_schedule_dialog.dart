@@ -56,11 +56,87 @@ class _AdminScheduleDialogState extends State<AdminScheduleDialog> with SingleTi
       initialIndex: widget.initialTabIndex, // Use the passed initial index
     );
 
-    // Load initial day's events immediately
-    _loadDayEvents(widget.initialTabIndex);
+    // Load ALL days' events immediately, not just the initial tab
+    _loadAllDaysEvents();
 
-    // Listen to tab changes to load events for new tabs
+    // Listen to tab changes
     _tabController.addListener(_onTabChanged);
+  }
+
+  Future<void> _loadAllDaysEvents() async {
+    try {
+      final weekId = '${widget.weekStartDate.year}-${widget.weekStartDate.month}-${widget.weekStartDate.day}';
+
+      final doc = await FirebaseFirestore.instance
+          .collection('tournamentSchedules')
+          .doc(weekId)
+          .get();
+
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+
+        // Load events for ALL days
+        _loadEventsForDay('monday', data);
+        _loadEventsForDay('tuesday', data);
+        _loadEventsForDay('wednesday', data);
+        _loadEventsForDay('thursday', data);
+        _loadEventsForDay('friday', data);
+        _loadEventsForDay('saturday', data);
+        _loadEventsForDay('sunday', data);
+
+        if (mounted) {
+          setState(() {});
+        }
+      }
+    } catch (e) {
+      print('Error loading all events: $e');
+    }
+  }
+
+  void _loadEventsForDay(String dayName, Map<String, dynamic> data) {
+    final dayKey = '${dayName}Events';
+
+    if (data.containsKey(dayKey)) {
+      final events = List<Map<String, dynamic>>.from(data[dayKey]);
+
+      switch (dayName) {
+        case 'monday':
+          _mondayEvents.clear();
+          _mondayEvents.addAll(events);
+          _mondayEvents.sort((a, b) => a['startTime'].compareTo(b['startTime']));
+          break;
+        case 'tuesday':
+          _tuesdayEvents.clear();
+          _tuesdayEvents.addAll(events);
+          _tuesdayEvents.sort((a, b) => a['startTime'].compareTo(b['startTime']));
+          break;
+        case 'wednesday':
+          _wednesdayEvents.clear();
+          _wednesdayEvents.addAll(events);
+          _wednesdayEvents.sort((a, b) => a['startTime'].compareTo(b['startTime']));
+          break;
+        case 'thursday':
+          _thursdayEvents.clear();
+          _thursdayEvents.addAll(events);
+          _thursdayEvents.sort((a, b) => a['startTime'].compareTo(b['startTime']));
+          break;
+        case 'friday':
+          _fridayEvents.clear();
+          _fridayEvents.addAll(events);
+          _fridayEvents.sort((a, b) => a['startTime'].compareTo(b['startTime']));
+          break;
+        case 'saturday':
+          _saturdayEvents.clear();
+          _saturdayEvents.addAll(events);
+          _saturdayEvents.sort((a, b) => a['startTime'].compareTo(b['startTime']));
+          break;
+        case 'sunday':
+          _sundayEvents.clear();
+          _sundayEvents.addAll(events);
+          _sundayEvents.sort((a, b) => a['startTime'].compareTo(b['startTime']));
+          break;
+      }
+    }
   }
 
   @override
@@ -181,6 +257,8 @@ class _AdminScheduleDialogState extends State<AdminScheduleDialog> with SingleTi
     return '${date.day}/${date.month}/${date.year}';
   }
 
+  // In admin_schedule_dialog.dart - Update the _saveAllEvents method:
+
   Future<void> _saveAllEvents() async {
     if (_isSaving) return;
 
@@ -191,6 +269,7 @@ class _AdminScheduleDialogState extends State<AdminScheduleDialog> with SingleTi
     try {
       final weekId = '${widget.weekStartDate.year}-${widget.weekStartDate.month}-${widget.weekStartDate.day}';
 
+      // Create data with ALL days' events (not just current tab)
       final data = {
         'weekStartDate': widget.weekStartDate.toIso8601String(),
         'mondayEvents': _mondayEvents,
@@ -203,6 +282,8 @@ class _AdminScheduleDialogState extends State<AdminScheduleDialog> with SingleTi
         'lastUpdated': DateTime.now().toIso8601String(),
       };
 
+      // Use set() without merge to replace entire document
+      // This ensures ALL days are saved together
       await FirebaseFirestore.instance
           .collection('tournamentSchedules')
           .doc(weekId)
@@ -619,7 +700,7 @@ class _AdminScheduleDialogState extends State<AdminScheduleDialog> with SingleTi
                       children: [
                         Icon(Icons.add, size: 20),
                         SizedBox(width: 8),
-                        Text('Thêm vào $dayName', style: TextStyle(fontSize: 16)),
+                        Text('Thêm vào $dayName', style: TextStyle(fontSize: 14)),
                       ],
                     ),
                   ),
